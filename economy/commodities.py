@@ -23,8 +23,14 @@ Metal = Commodity('Metal')
 
 
 RecipeStep = namedtuple('Recipe', ['commodity','qty_in','qty_out'])
-glass_recipe = (
+sand_digger = (
+        RecipeStep(Sand, 0, 1),
+        )
+glass_maker = (
         RecipeStep(Sand, 2, 0),
         RecipeStep(Glass, 0, 1),
+        )
+glass_consumer = (
+        RecipeStep(Glass, 1, 0),
         )
 
