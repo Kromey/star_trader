@@ -6,10 +6,11 @@ from .offer import Ask,Bid
 
 class Inventory(object):
     _capacity = 0
-    _items = {}
+    _items = None
 
     def __init__(self, capacity):
         self._capacity = capacity
+        self._items = {}
 
     def query_inventory(self, item=None):
         if item is None:
@@ -22,7 +23,10 @@ class Inventory(object):
 
     def add_item(self, item, qty=1):
         if self.query_inventory() + qty > self._capacity:
-            raise ValueError("Not enough room in inventory")
+            raise ValueError("Not enough room in inventory; have {inv_qty}, tried to add {qty}".format(
+                inv_qty = self.query_inventory(),
+                qty = qty,
+                ))
         if self.query_inventory(item) + qty < 0:
             raise ValueError("Not enough items in inventory")
 
@@ -69,12 +73,18 @@ class Agent(object):
         for commodity,qty_in,qty_out in self._recipe:
             if qty_in > 0:
                 # Input into our recipe, make a bid to buy
+                # We deliberately do not account for qty we're selling because
+                # we don't know how many we'll actually sell in this round
+                # TODO: Need to adjust Bid qty to avoid overflowing inventory
+                #       if an Agent requires multiple inputs
+                # TODO: Agents should be reluctant to buy while prices are high
                 qty = space - self._inventory.query_inventory(commodity)
                 if qty > 0:
                     yield Bid(commodity, qty, 0, self)
 
             if qty_out > 0:
                 # We produce these, sell 'em
+                # TODO: Agents should be reluctant to sell while prices are low
                 qty = self._inventory.query_inventory(commodity)
                 if qty > 0:
                     yield Ask(commodity, qty, 0, self)
