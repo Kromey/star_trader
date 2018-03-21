@@ -2,7 +2,7 @@ import random
 
 
 from .agent import Agent
-from .commodities import glass_consumer,glass_maker,sand_digger
+from . import commodities
 from .offer import Ask,Bid
 
 
@@ -11,14 +11,18 @@ class OrderBook(object):
         self.clear_books()
 
     def clear_books(self):
-        self._asks = []
-        self._bids = []
+        self._asks = {}
+        self._bids = {}
 
     def add_order(self, order):
         if isinstance(order, Ask):
-            self._asks.append(order)
+            if order.commodity not in self._asks:
+                self._asks[order.commodity] = []
+            self._asks[order.commodity].append(order)
         elif isinstance(order, Bid):
-            self._bids.append(order)
+            if order.commodity not in self._bids:
+                self._bids[order.commodity] = []
+            self._bids[order.commodity].append(order)
         else:
             raise ValueError("Order is not an Ask or a Bid")
 
@@ -26,18 +30,21 @@ class OrderBook(object):
         for order in orders:
             self.add_order(order)
 
-    def resolve_orders(self):
+    def resolve_orders(self, commodity):
+        asks = self._asks.get(commodity, [])
+        bids = self._bids.get(commodity, [])
+
         # First shuffle the orders to ensure Agent ordering not a factor
-        random.shuffle(self._asks)
-        random.shuffle(self._bids)
+        random.shuffle(asks)
+        random.shuffle(bids)
 
         # Now sort by price
-        self._asks.sort(key=lambda o: o.unit_price, reverse=True)
-        self._bids.sort(key=lambda o: o.unit_price)
+        asks.sort(key=lambda o: o.unit_price, reverse=True)
+        bids.sort(key=lambda o: o.unit_price)
 
-        while self._asks and self._bids:
-            ask = self._asks.pop()
-            bid = self._bids.pop()
+        while asks and bids:
+            ask = asks.pop()
+            bid = bids.pop()
 
             qty = min(ask.units, bid.units)
             price = qty * int((ask.unit_price + bid.unit_price)/2)
@@ -57,9 +64,9 @@ class Market(object):
         self._book = OrderBook()
 
         for i in range(0, num_agents, 3):
-            self._agents.append(Agent(sand_digger))
-            self._agents.append(Agent(glass_maker))
-            self._agents.append(Agent(glass_consumer))
+            self._agents.append(Agent(commodities.sand_digger))
+            self._agents.append(Agent(commodities.glass_maker))
+            self._agents.append(Agent(commodities.glass_consumer))
 
     def simulate(self, steps=1):
         for day in range(steps):
@@ -69,5 +76,6 @@ class Market(object):
                 self._book.add_orders(agent.make_offers())
                 agent.do_production()
 
-            self._book.resolve_orders()
+            for commodity in commodities.all():
+                self._book.resolve_orders(commodity)
 
