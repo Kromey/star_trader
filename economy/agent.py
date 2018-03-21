@@ -1,4 +1,5 @@
 from collections import namedtuple
+import random
 
 
 from .offer import Ask,Bid
@@ -78,16 +79,16 @@ class Agent(object):
                 # TODO: Need to adjust Bid qty to avoid overflowing inventory
                 #       if an Agent requires multiple inputs
                 # TODO: Agents should be reluctant to buy while prices are high
-                qty = space - self._inventory.query_inventory(commodity)
+                qty = space
                 if qty > 0:
-                    yield Bid(commodity, qty, 0, self)
+                    yield Bid(commodity, qty, random.randint(0,100), self)
 
             if qty_out > 0:
                 # We produce these, sell 'em
                 # TODO: Agents should be reluctant to sell while prices are low
                 qty = self._inventory.query_inventory(commodity)
                 if qty > 0:
-                    yield Ask(commodity, qty, 0, self)
+                    yield Ask(commodity, qty, random.randint(0,100), self)
 
     def _can_produce(self):
         for commodity,qty_in,qty_out in self._recipe:
