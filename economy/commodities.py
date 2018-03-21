@@ -5,6 +5,10 @@ _by_name = {}
 def by_name(name):
     return _by_name[name.lower()]
 
+def all():
+    for commodity in _by_name.values():
+        yield commodity
+
 
 class Commodity(namedtuple('Commodity', ['name',])):
     __slots__ = ()
