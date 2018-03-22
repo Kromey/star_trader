@@ -47,7 +47,10 @@ class OrderBook(object):
             bid = bids.pop()
 
             qty = min(ask.units, bid.units)
-            price = qty * int((ask.unit_price + bid.unit_price)/2)
+            price = int((ask.unit_price + bid.unit_price)/2)
+
+            bid.agent.give_money(qty * price, ask.agent)
+            ask.agent.give_items(commodity, qty, bid.agent)
 
             print("Bid: {} units of {} for {}; Ask: {} units of {} for {}".format(
                 bid.units, bid.commodity, bid.unit_price,
