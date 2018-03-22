@@ -72,6 +72,10 @@ class Market(object):
             self._agents.append(Agent(commodities.glass_consumer))
 
     def simulate(self, steps=1):
+        ## DEBUG
+        for agent in self._agents:
+            dump_agent(agent)
+
         for day in range(steps):
             self._book.clear_books()
 
