@@ -52,9 +52,11 @@ class Agent(object):
     INVENTORY_SIZE = 15
     _inventory = None
     _recipe = None
+    _money = 0
 
-    def __init__(self, recipe, initial_inv=10):
+    def __init__(self, recipe, initial_inv=10, initial_money=100):
         self._recipe = recipe
+        self._money = initial_money
 
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
@@ -89,6 +91,14 @@ class Agent(object):
                 qty = self._inventory.query_inventory(commodity)
                 if qty > 0:
                     yield Ask(commodity, qty, random.randint(0,100), self)
+
+    def give_money(self, amt, other):
+        self._money -= amt
+        other._money += amt
+
+    def give_items(self, item, amt, other):
+        self._inventory.remove_item(item, amt)
+        other._inventory.add_item(item, amt)
 
     def _can_produce(self):
         for commodity,qty_in,qty_out in self._recipe:
