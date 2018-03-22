@@ -33,7 +33,7 @@ class OrderBase(object):
 
     @property
     def agent(self):
-        return self.agent
+        return self._agent
 
     def __str__(self):
         return '{order}({commodity},{units},{unit_price})'.format(
