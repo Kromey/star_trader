@@ -5,6 +5,20 @@ import random
 from .offer import Ask,Bid
 
 
+def dump_agent(agent):
+    inv = ''
+    for item in agent._inventory._items:
+        inv += ',{item},{qty}'.format(
+                item = item,
+                qty = agent._inventory.query_inventory(item),
+                )
+
+    print('{agent}{inv}'.format(
+        agent = agent._recipe,
+        inv = inv
+        ))
+
+
 class Inventory(object):
     _capacity = 0
     _items = None

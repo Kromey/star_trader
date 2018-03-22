@@ -1,7 +1,7 @@
 import random
 
 
-from .agent import Agent
+from .agent import Agent,dump_agent
 from . import commodities
 from .offer import Ask,Bid
 
@@ -81,4 +81,8 @@ class Market(object):
 
             for commodity in commodities.all():
                 self._book.resolve_orders(commodity)
+
+        ## DEBUG
+        for agent in self._agents:
+            dump_agent(agent)
 
