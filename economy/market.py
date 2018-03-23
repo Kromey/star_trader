@@ -34,6 +34,9 @@ class OrderBook(object):
         asks = self._asks.get(commodity, [])
         bids = self._bids.get(commodity, [])
 
+        units_sold = 0
+        total_value = 0
+
         # First shuffle the orders to ensure Agent ordering not a factor
         random.shuffle(asks)
         random.shuffle(bids)
@@ -49,13 +52,40 @@ class OrderBook(object):
             qty = min(ask.units, bid.units)
             price = int((ask.unit_price + bid.unit_price)/2)
 
+            units_sold += qty
+            total_value += qty*price
+
             bid.agent.give_money(qty * price, ask.agent)
             ask.agent.give_items(commodity, qty, bid.agent)
+
+            bid.agent.update_price_beliefs(commodity, price)
+            ask.agent.update_price_beliefs(commodity, price)
 
             print("Bid: {} units of {} for {}; Ask: {} units of {} for {}".format(
                 bid.units, bid.commodity, bid.unit_price,
                 ask.units, ask.commodity, ask.unit_price,
                 ))
+
+        if units_sold > 0:
+            unit_price = int(total_value/units_sold)
+
+            while asks:
+                # Unsuccessful Asks
+                ask = asks.pop()
+                ask.agent.update_price_beliefs(commodity, unit_price, False)
+
+            while bids:
+                # Unsuccessful Bids
+                bid = bids.pop()
+                bid.agent.update_price_beliefs(commodity, unit_price, False)
+
+            print("Sold {units} {good} at an average price of {price}".format(
+                units=units_sold,
+                good=commodity,
+                price=unit_price,
+            ))
+        else:
+            print("0 units of {good} were traded today".format(good=commodity))
 
 
 class Market(object):
