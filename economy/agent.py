@@ -68,16 +68,22 @@ class Agent(object):
     _recipe = None
     _money = 0
     _name = None
+    _beliefs = None
 
     def __init__(self, recipe, initial_inv=10, initial_money=100):
         self._recipe = recipe
         self._money = initial_money
         self._name = AGENT_NAMES.pop()
 
+        self._beliefs = {}
+
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
         for commodity,qty_in,qty_out in self._recipe:
             self._inventory.set_qty(commodity, int(initial_inv/len(recipe)))
+            belief_low = random.randint(5,15)
+            belief_high = belief_low + random.randint(5,10)
+            self._beliefs[commodity] = [belief_low, belief_high]
 
     def do_production(self):
         while self._can_produce():
@@ -99,14 +105,14 @@ class Agent(object):
                 # TODO: Agents should be reluctant to buy while prices are high
                 qty = space
                 if qty > 0:
-                    yield Bid(commodity, qty, random.randint(0,100), self)
+                    yield Bid(commodity, qty, self._choose_price(commodity), self)
 
             if qty_out > 0:
                 # We produce these, sell 'em
                 # TODO: Agents should be reluctant to sell while prices are low
                 qty = self._inventory.query_inventory(commodity)
                 if qty > 0:
-                    yield Ask(commodity, qty, random.randint(0,100), self)
+                    yield Ask(commodity, qty, self._choose_price(commodity), self)
 
     def give_money(self, amt, other):
         self._money -= amt
@@ -126,6 +132,11 @@ class Agent(object):
                 return False
 
         return True
+
+    def _choose_price(self, commodity):
+        # TODO: Need to consider cost beliefs of inputs if this is an output
+        self._beliefs[commodity].sort()
+        return random.randint(*self._beliefs[commodity])
 
 AGENT_NAMES = [
     'James',
