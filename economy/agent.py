@@ -13,9 +13,10 @@ def dump_agent(agent):
                 qty = agent._inventory.query_inventory(item),
                 )
 
-    print('{agent}{inv}'.format(
+    print('{agent}{inv},{money}¤'.format(
         agent = agent._name,
-        inv = inv
+        inv = inv,
+        money = agent._money,
         ))
 
 
