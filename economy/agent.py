@@ -88,6 +88,10 @@ class Agent(object):
 
     @property
     def is_bankrupt(self):
+        # TODO: TEMPORARY hack to prevent "harvesters"/"consumers" going bankrupt
+        if len(self._recipe) <= 1:
+            return False
+
         return self._money <= 0
 
     def do_production(self):
@@ -97,10 +101,6 @@ class Agent(object):
                 self._inventory.remove_item(commodity, qty_in)
                 # Add any output
                 self._inventory.add_item(commodity, qty_out)
-
-        # TODO: TEMPORARY hack to prevent "harvesters"/"consumers" going bankrupt
-        if len(self._recipe) <= 1:
-            self._money = 100
 
     def make_offers(self):
         space = self._inventory.available_space()
