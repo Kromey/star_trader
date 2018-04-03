@@ -86,6 +86,10 @@ class Agent(object):
             belief_high = belief_low + random.randint(5,10)
             self._beliefs[commodity] = [belief_low, belief_high]
 
+    @property
+    def is_bankrupt(self):
+        return self._money <= 0
+
     def do_production(self):
         while self._can_produce():
             for commodity,qty_in,qty_out in self._recipe:

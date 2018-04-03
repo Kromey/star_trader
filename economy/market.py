@@ -120,3 +120,5 @@ class Market(object):
         for agent in self._agents:
             dump_agent(agent)
 
+        self._agents[:] = [agent for agent in self._agents if not agent.is_bankrupt]
+
