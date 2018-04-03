@@ -139,6 +139,8 @@ class Agent(object):
 
             self._beliefs[commodity] = [low, high]
 
+        self._beliefs[commodity].sort()
+
     def give_money(self, amt, other):
         self._money -= amt
         other._money += amt
@@ -160,7 +162,6 @@ class Agent(object):
 
     def _choose_price(self, commodity):
         # TODO: Need to consider cost beliefs of inputs if this is an output
-        self._beliefs[commodity].sort()
         return random.randint(*self._beliefs[commodity])
 
 AGENT_NAMES = [
