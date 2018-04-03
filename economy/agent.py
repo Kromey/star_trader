@@ -124,29 +124,29 @@ class Agent(object):
                     yield Ask(commodity, qty, self._choose_price(commodity), self)
 
     def update_price_beliefs(self, commodity, clearing_price, successful=True):
-        # TODO: Use historical mean to adjust beliefs
         mean = int(sum(self._beliefs[commodity])/2)
         delta = mean - clearing_price # What we believe it's worth, versus what was paid
 
         wobble = 0.1
 
+        # Our current price beliefs
+        low, high = self._beliefs[commodity]
+
         if successful:
             # Who cares what the price was? Our offered price was good!
             # We're now more certain in our belief, so narrow our band
-            low = min(self._beliefs[commodity]) + int(wobble*mean)
-            high = max(self._beliefs[commodity]) - int(wobble*mean)
-            self._beliefs[commodity] = [low, high]
+            low += int(wobble*mean)
+            high -= int(wobble*mean)
         else:
             # Either we asked too much, or bid too little
             # Shift towards what successful agents actually paid
-            low = min(self._beliefs[commodity]) - int(mean/2)
-            high = max(self._beliefs[commodity]) - int(mean/2)
+            low -= int(delta/2)
+            high -= int(delta/2)
             # We're now less certain, so expand our (shifted) band
             low -= int(wobble*mean)
             high += int(wobble*mean)
 
-            self._beliefs[commodity] = [low, high]
-
+        self._beliefs[commodity] = [low, high]
         self._beliefs[commodity].sort()
 
     def give_money(self, amt, other):
