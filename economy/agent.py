@@ -161,8 +161,24 @@ class Agent(object):
         return True
 
     def _choose_price(self, commodity):
-        # TODO: Need to consider cost beliefs of inputs if this is an output
-        return random.randint(*self._beliefs[commodity])
+        return self._get_cost(commodity) + random.randint(*self._beliefs[commodity])
+
+    def _get_cost(self, commodity):
+        cost = 0
+        outputs = 0
+
+        for step_commodity,qty_in,qty_out in self._recipe:
+            if commodity == step_commodity and qty_out == 0:
+                # The commodity we're costing isn't an output, so our cost is 0
+                return 0
+
+            # If this isn't an input, qty_in will be 0 and we won't be changing cost
+            cost += qty_in * sum(self._beliefs[step_commodity])/2
+
+            # We'll split up our cost by our total outputs
+            outputs += qty_out
+
+        return int(cost/max(1,outputs))
 
 AGENT_NAMES = [
     'James',
