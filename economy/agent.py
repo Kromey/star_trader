@@ -94,6 +94,10 @@ class Agent(object):
                 # Add any output
                 self._inventory.add_item(commodity, qty_out)
 
+        # TODO: TEMPORARY hack to prevent "harvesters"/"consumers" going bankrupt
+        if len(self._recipe) <= 1:
+            self._money = 100
+
     def make_offers(self):
         space = self._inventory.available_space()
         for commodity,qty_in,qty_out in self._recipe:
