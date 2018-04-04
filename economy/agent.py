@@ -80,11 +80,11 @@ class Agent(object):
 
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
-        for commodity,qty_in,qty_out in self._recipe:
-            self._inventory.set_qty(commodity, int(initial_inv/len(recipe)))
+        for good,qty_in,qty_out in self._recipe:
+            self._inventory.set_qty(good, int(initial_inv/len(recipe)))
             belief_low = random.randint(5,15)
             belief_high = belief_low + random.randint(5,10)
-            self._beliefs[commodity] = [belief_low, belief_high]
+            self._beliefs[good] = [belief_low, belief_high]
 
     @property
     def is_bankrupt(self):
@@ -96,15 +96,15 @@ class Agent(object):
 
     def do_production(self):
         while self._can_produce():
-            for commodity,qty_in,qty_out in self._recipe:
+            for good,qty_in,qty_out in self._recipe:
                 # Deduct any required input
-                self._inventory.remove_item(commodity, qty_in)
+                self._inventory.remove_item(good, qty_in)
                 # Add any output
-                self._inventory.add_item(commodity, qty_out)
+                self._inventory.add_item(good, qty_out)
 
     def make_offers(self):
         space = self._inventory.available_space()
-        for commodity,qty_in,qty_out in self._recipe:
+        for good,qty_in,qty_out in self._recipe:
             if qty_in > 0:
                 # Input into our recipe, make a bid to buy
                 # We deliberately do not account for qty we're selling because
@@ -114,23 +114,23 @@ class Agent(object):
                 # TODO: Agents should be reluctant to buy while prices are high
                 qty = space
                 if qty > 0:
-                    yield Bid(commodity, qty, self._choose_price(commodity), self)
+                    yield Bid(good, qty, self._choose_price(good), self)
 
             if qty_out > 0:
                 # We produce these, sell 'em
                 # TODO: Agents should be reluctant to sell while prices are low
-                qty = self._inventory.query_inventory(commodity)
+                qty = self._inventory.query_inventory(good)
                 if qty > 0:
-                    yield Ask(commodity, qty, self._choose_price(commodity), self)
+                    yield Ask(good, qty, self._choose_price(good), self)
 
-    def update_price_beliefs(self, commodity, clearing_price, successful=True):
-        mean = int(sum(self._beliefs[commodity])/2)
+    def update_price_beliefs(self, good, clearing_price, successful=True):
+        mean = int(sum(self._beliefs[good])/2)
         delta = mean - clearing_price # What we believe it's worth, versus what was paid
 
         wobble = 0.1
 
         # Our current price beliefs
-        low, high = self._beliefs[commodity]
+        low, high = self._beliefs[good]
 
         if successful:
             # Who cares what the price was? Our offered price was good!
@@ -146,8 +146,8 @@ class Agent(object):
             low -= int(wobble*mean)
             high += int(wobble*mean)
 
-        self._beliefs[commodity] = [low, high]
-        self._beliefs[commodity].sort()
+        self._beliefs[good] = [low, high]
+        self._beliefs[good].sort()
 
     def give_money(self, amt, other):
         self._money -= amt
@@ -158,33 +158,33 @@ class Agent(object):
         other._inventory.add_item(item, amt)
 
     def _can_produce(self):
-        for commodity,qty_in,qty_out in self._recipe:
+        for good,qty_in,qty_out in self._recipe:
             # Ensure there's enough input
-            if qty_in > self._inventory.query_inventory(commodity):
+            if qty_in > self._inventory.query_inventory(good):
                 return False
             # Ensure there's room for the output
-            if qty_out + self._inventory.query_inventory(commodity) > Agent.INVENTORY_SIZE:
+            if qty_out + self._inventory.query_inventory(good) > Agent.INVENTORY_SIZE:
                 return False
 
         return True
 
-    def _choose_price(self, commodity):
-        price = random.randint(*self._beliefs[commodity])
+    def _choose_price(self, good):
+        price = random.randint(*self._beliefs[good])
 
         # Cost+10% acts as a floor on our order price
-        return max(price, int(1.1 * self._get_cost(commodity)))
+        return max(price, int(1.1 * self._get_cost(good)))
 
-    def _get_cost(self, commodity):
+    def _get_cost(self, good):
         cost = 0
         outputs = 0
 
         for step in self._recipe:
-            if commodity == step.commodity and step.qty_out == 0:
-                # The commodity we're costing isn't an output, so our cost is 0
+            if good == step.good and step.qty_out == 0:
+                # The good we're costing isn't an output, so our cost is 0
                 return 0
 
             # If this isn't an input, qty_in will be 0 and we won't be changing cost
-            cost += step.qty_in * sum(self._beliefs[step.commodity])/2
+            cost += step.qty_in * sum(self._beliefs[step.good])/2
 
             # We'll split up our cost by our total outputs
             outputs += step.qty_out

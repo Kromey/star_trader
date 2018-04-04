@@ -4,20 +4,20 @@ MIN_PRICE = 1
 
 
 class OrderBase(object):
-    _commodity = None
+    _good = None
     _units = 0
     _unit_price = 0
     _agent = None
 
-    def __init__(self, commodity, units, unit_price, agent):
-        self._commodity = commodity
+    def __init__(self, good, units, unit_price, agent):
+        self._good = good
         self._units = units
         self._unit_price = max(unit_price, MIN_PRICE)
         self._agent = agent
 
     @property
-    def commodity(self):
-        return self._commodity
+    def good(self):
+        return self._good
 
     @property
     def units(self):
@@ -36,9 +36,9 @@ class OrderBase(object):
         return self._agent
 
     def __str__(self):
-        return '{order}({commodity},{units},{unit_price})'.format(
+        return '{order}({good},{units},{unit_price})'.format(
                 order = self.__class__.__name__,
-                commodity = self.commodity,
+                good = self.good,
                 units = self.units,
                 unit_price = self.unit_price,
                 )

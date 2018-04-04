@@ -2,7 +2,7 @@ import random
 
 
 from .agent import Agent,dump_agent
-from . import commodities
+from . import goods
 from .offer import Ask,Bid
 
 
@@ -16,13 +16,13 @@ class OrderBook(object):
 
     def add_order(self, order):
         if isinstance(order, Ask):
-            if order.commodity not in self._asks:
-                self._asks[order.commodity] = []
-            self._asks[order.commodity].append(order)
+            if order.good not in self._asks:
+                self._asks[order.good] = []
+            self._asks[order.good].append(order)
         elif isinstance(order, Bid):
-            if order.commodity not in self._bids:
-                self._bids[order.commodity] = []
-            self._bids[order.commodity].append(order)
+            if order.good not in self._bids:
+                self._bids[order.good] = []
+            self._bids[order.good].append(order)
         else:
             raise ValueError("Order is not an Ask or a Bid")
 
@@ -30,9 +30,9 @@ class OrderBook(object):
         for order in orders:
             self.add_order(order)
 
-    def resolve_orders(self, commodity):
-        asks = self._asks.get(commodity, [])
-        bids = self._bids.get(commodity, [])
+    def resolve_orders(self, good):
+        asks = self._asks.get(good, [])
+        bids = self._bids.get(good, [])
 
         units_sold = 0
         total_value = 0
@@ -56,14 +56,14 @@ class OrderBook(object):
             total_value += qty*price
 
             bid.agent.give_money(qty * price, ask.agent)
-            ask.agent.give_items(commodity, qty, bid.agent)
+            ask.agent.give_items(good, qty, bid.agent)
 
-            bid.agent.update_price_beliefs(commodity, price)
-            ask.agent.update_price_beliefs(commodity, price)
+            bid.agent.update_price_beliefs(good, price)
+            ask.agent.update_price_beliefs(good, price)
 
             print("Bid: {} units of {} for {}; Ask: {} units of {} for {}".format(
-                bid.units, bid.commodity, bid.unit_price,
-                ask.units, ask.commodity, ask.unit_price,
+                bid.units, bid.good, bid.unit_price,
+                ask.units, ask.good, ask.unit_price,
                 ))
 
         if units_sold > 0:
@@ -72,20 +72,20 @@ class OrderBook(object):
             while asks:
                 # Unsuccessful Asks
                 ask = asks.pop()
-                ask.agent.update_price_beliefs(commodity, unit_price, False)
+                ask.agent.update_price_beliefs(good, unit_price, False)
 
             while bids:
                 # Unsuccessful Bids
                 bid = bids.pop()
-                bid.agent.update_price_beliefs(commodity, unit_price, False)
+                bid.agent.update_price_beliefs(good, unit_price, False)
 
             print("Sold {units} {good} at an average price of {price}".format(
                 units=units_sold,
-                good=commodity,
+                good=good,
                 price=unit_price,
             ))
         else:
-            print("0 units of {good} were traded today".format(good=commodity))
+            print("0 units of {good} were traded today".format(good=good))
 
 
 class Market(object):
@@ -97,9 +97,9 @@ class Market(object):
         self._book = OrderBook()
 
         for i in range(0, num_agents, 3):
-            self._agents.append(Agent(commodities.sand_digger))
-            self._agents.append(Agent(commodities.glass_maker))
-            self._agents.append(Agent(commodities.glass_consumer))
+            self._agents.append(Agent(goods.sand_digger))
+            self._agents.append(Agent(goods.glass_maker))
+            self._agents.append(Agent(goods.glass_consumer))
 
     def simulate(self, steps=1):
         ## DEBUG
@@ -113,8 +113,8 @@ class Market(object):
                 self._book.add_orders(agent.make_offers())
                 agent.do_production()
 
-            for commodity in commodities.all():
-                self._book.resolve_orders(commodity)
+            for good in goods.all():
+                self._book.resolve_orders(good)
 
         ## DEBUG
         for agent in self._agents:

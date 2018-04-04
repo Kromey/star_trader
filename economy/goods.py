@@ -6,11 +6,11 @@ def by_name(name):
     return _by_name[name.lower()]
 
 def all():
-    for commodity in _by_name.values():
-        yield commodity
+    for good in _by_name.values():
+        yield good
 
 
-class Commodity(namedtuple('Commodity', ['name',])):
+class Good(namedtuple('Good', ['name',])):
     __slots__ = ()
     def __init__(self, *args, **kwargs):
         _by_name[self.name.lower()] = self
@@ -19,14 +19,14 @@ class Commodity(namedtuple('Commodity', ['name',])):
         return self.name
 
 
-Sand = Commodity('Sand')
-Glass = Commodity('Glass')
+Sand = Good('Sand')
+Glass = Good('Glass')
 
-Ore = Commodity('Ore')
-Metal = Commodity('Metal')
+Ore = Good('Ore')
+Metal = Good('Metal')
 
 
-RecipeStep = namedtuple('Recipe', ['commodity','qty_in','qty_out'])
+RecipeStep = namedtuple('Recipe', ['good','qty_in','qty_out'])
 sand_digger = (
         RecipeStep(Sand, 0, 1),
         )
