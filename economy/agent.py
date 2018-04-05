@@ -80,8 +80,9 @@ class Agent(object):
 
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
-        for good,qty_in,qty_out in self._recipe:
-            self._inventory.set_qty(good, int(initial_inv/len(recipe)))
+        qty = int(initial_inv / (len(self._recipe.inputs)+len(self._recipe.outputs)))
+        for good,*_ in self._recipe.inputs+self._recipe.outputs:
+            self._inventory.set_qty(good, qty)
             belief_low = random.randint(5,15)
             belief_high = belief_low + random.randint(5,10)
             self._beliefs[good] = [belief_low, belief_high]
@@ -89,39 +90,40 @@ class Agent(object):
     @property
     def is_bankrupt(self):
         # TODO: TEMPORARY hack to prevent "harvesters"/"consumers" going bankrupt
-        if len(self._recipe) <= 1:
+        if len(self._recipe.inputs+self._recipe.outputs) <= 1:
             return False
 
         return self._money <= 0
 
     def do_production(self):
         while self._can_produce():
-            for good,qty_in,qty_out in self._recipe:
+            for good,qty in self._recipe.inputs:
                 # Deduct any required input
-                self._inventory.remove_item(good, qty_in)
+                self._inventory.remove_item(good, qty)
+
+            for good,qty in self._recipe.outputs:
                 # Add any output
-                self._inventory.add_item(good, qty_out)
+                self._inventory.add_item(good, qty)
 
     def make_offers(self):
         space = self._inventory.available_space()
-        for good,qty_in,qty_out in self._recipe:
-            if qty_in > 0:
-                # Input into our recipe, make a bid to buy
-                # We deliberately do not account for qty we're selling because
-                # we don't know how many we'll actually sell in this round
-                # TODO: Need to adjust Bid qty to avoid overflowing inventory
-                #       if an Agent requires multiple inputs
-                # TODO: Agents should be reluctant to buy while prices are high
-                qty = space
-                if qty > 0:
-                    yield Bid(good, qty, self._choose_price(good), self)
+        for good,qty in self._recipe.inputs:
+            # Input into our recipe, make a bid to buy
+            # We deliberately do not account for qty we're selling because
+            # we don't know how many we'll actually sell in this round
+            # TODO: Need to adjust Bid qty to avoid overflowing inventory
+            #       if an Agent requires multiple inputs
+            # TODO: Agents should be reluctant to buy while prices are high
+            bid_qty = space
+            if bid_qty > 0:
+                yield Bid(good, bid_qty, self._choose_price(good), self)
 
-            if qty_out > 0:
-                # We produce these, sell 'em
-                # TODO: Agents should be reluctant to sell while prices are low
-                qty = self._inventory.query_inventory(good)
-                if qty > 0:
-                    yield Ask(good, qty, self._choose_price(good), self)
+        for good,qty in self._recipe.outputs:
+            # We produce these, sell 'em
+            # TODO: Agents should be reluctant to sell while prices are low
+            ask_qty = self._inventory.query_inventory(good)
+            if ask_qty > 0:
+                yield Ask(good, ask_qty, self._choose_price(good), self)
 
     def update_price_beliefs(self, good, clearing_price, successful=True):
         mean = int(sum(self._beliefs[good])/2)
@@ -158,12 +160,14 @@ class Agent(object):
         other._inventory.add_item(item, amt)
 
     def _can_produce(self):
-        for good,qty_in,qty_out in self._recipe:
+        for good,qty in self._recipe.inputs:
             # Ensure there's enough input
-            if qty_in > self._inventory.query_inventory(good):
+            if qty > self._inventory.query_inventory(good):
                 return False
+
+        for good,qty in self._recipe.outputs:
             # Ensure there's room for the output
-            if qty_out + self._inventory.query_inventory(good) > Agent.INVENTORY_SIZE:
+            if qty + self._inventory.query_inventory(good) > Agent.INVENTORY_SIZE:
                 return False
 
         return True
@@ -175,19 +179,15 @@ class Agent(object):
         return max(price, int(1.1 * self._get_cost(good)))
 
     def _get_cost(self, good):
+        if good not in [x.good for x in self._recipe.outputs]:
+            # This is not an output, so our cost is 0
+            return 0
+
         cost = 0
-        outputs = 0
+        outputs = sum([x.qty for x in self._recipe.outputs])
 
-        for step in self._recipe:
-            if good == step.good and step.qty_out == 0:
-                # The good we're costing isn't an output, so our cost is 0
-                return 0
-
-            # If this isn't an input, qty_in will be 0 and we won't be changing cost
-            cost += step.qty_in * sum(self._beliefs[step.good])/2
-
-            # We'll split up our cost by our total outputs
-            outputs += step.qty_out
+        for step in self._recipe.inputs:
+            cost += step.qty * sum(self._beliefs[step.good])/2
 
         return int(cost/max(1,outputs))
 
