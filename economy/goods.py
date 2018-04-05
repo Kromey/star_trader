@@ -26,15 +26,35 @@ Ore = Good('Ore')
 Metal = Good('Metal')
 
 
-RecipeStep = namedtuple('Recipe', ['good','qty_in','qty_out'])
-sand_digger = (
-        RecipeStep(Sand, 0, 1),
-        )
-glass_maker = (
-        RecipeStep(Sand, 2, 0),
-        RecipeStep(Glass, 0, 1),
-        )
-glass_consumer = (
-        RecipeStep(Glass, 1, 0),
-        )
+RecipeStep = namedtuple('RecipeStep', ['good','qty'])
+
+
+class Recipe(object):
+    __slots__ = ('__inputs','__outputs','__name')
+
+    def __init__(self, name, inputs, outputs):
+        self.__name = name
+
+        self.__inputs = ()
+        for step in inputs:
+            self.__inputs += (RecipeStep(*step),)
+
+        self.__outputs = ()
+        for step in outputs:
+            self.__outputs += (RecipeStep(*step),)
+
+    @property
+    def inputs(self):
+        return self.__inputs
+
+    @property
+    def outputs(self):
+        return self.__outputs
+
+    def __str__(self):
+        return self.__name
+
+sand_digger = Recipe('SandDigger', (), ((Sand, 1),))
+glass_maker = Recipe('GlassMaker', ((Sand, 2),), ((Glass, 1),))
+glass_consumer = Recipe('GlassEater', ((Glass, 1),), ())
 
