@@ -96,10 +96,9 @@ class Market(object):
         self._agents = []
         self._book = OrderBook()
 
-        for i in range(0, num_agents, 3):
-            self._agents.append(Agent(goods.sand_digger))
-            self._agents.append(Agent(goods.glass_maker))
-            self._agents.append(Agent(goods.glass_consumer))
+        for recipe in [goods.sand_digger, goods.glass_maker, goods.glass_consumer]:
+            for i in range(0, num_agents, 3):
+                self._agents.append(Agent(recipe))
 
     def simulate(self, steps=1):
         ## DEBUG
