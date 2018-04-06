@@ -1,9 +1,14 @@
+from collections import namedtuple
 import random
 
 
 from .agent import Agent,dump_agent
 from . import goods
 from .offer import Ask,Bid
+
+
+TradesSummary = namedtuple('TradesSummary', ['volume', 'low', 'high', 'mean'])
+MarketHistory = namedtuple('MarketHistory', goods.all())
 
 
 class OrderBook(object):
@@ -37,6 +42,9 @@ class OrderBook(object):
         units_sold = 0
         total_value = 0
 
+        low = None
+        high = None
+
         # First shuffle the orders to ensure Agent ordering not a factor
         random.shuffle(asks)
         random.shuffle(bids)
@@ -51,6 +59,16 @@ class OrderBook(object):
 
             qty = min(ask.units, bid.units)
             price = int((ask.unit_price + bid.unit_price)/2)
+
+            try:
+                low = min(low, price)
+            except TypeError:
+                low = price
+
+            try:
+                high = max(high, price)
+            except TypeError:
+                high = price
 
             units_sold += qty
             total_value += qty*price
@@ -85,12 +103,16 @@ class OrderBook(object):
                 price=unit_price,
             ))
         else:
+            unit_price = None
             print("0 units of {good} were traded today".format(good=good))
+
+        return TradesSummary(low=low, high=high, volume=units_sold, mean=unit_price)
 
 
 class Market(object):
     _agents = None
     _book = None
+    _history = []
 
     def __init__(self, num_agents=15):
         self._agents = []
@@ -106,6 +128,7 @@ class Market(object):
             dump_agent(agent)
 
         for day in range(steps):
+            day_trades = {}
             self._book.clear_books()
 
             for agent in self._agents:
@@ -113,11 +136,18 @@ class Market(object):
                 agent.do_production()
 
             for good in goods.all():
-                self._book.resolve_orders(good)
+                trades = self._book.resolve_orders(good)
+                day_trades[good.name] = trades
+
+            self._history.append(MarketHistory(**day_trades))
 
         ## DEBUG
         for agent in self._agents:
             dump_agent(agent)
 
         self._agents[:] = [agent for agent in self._agents if not agent.is_bankrupt]
+
+    @property
+    def history(self):
+        return self._history
 
