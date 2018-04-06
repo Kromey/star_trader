@@ -22,8 +22,8 @@ class Good(namedtuple('Good', ['name',])):
 Sand = Good('Sand')
 Glass = Good('Glass')
 
-Ore = Good('Ore')
-Metal = Good('Metal')
+#Ore = Good('Ore')
+#Metal = Good('Metal')
 
 
 RecipeStep = namedtuple('RecipeStep', ['good','qty'])
