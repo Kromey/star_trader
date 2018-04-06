@@ -2,9 +2,9 @@ from collections import namedtuple
 import random
 
 
-from .agent import Agent,dump_agent
-from . import goods
-from .offer import Ask,Bid
+from economy.agent import Agent,dump_agent
+from economy import goods
+from economy.offer import Ask,Bid
 
 
 TradesSummary = namedtuple('TradesSummary', ['volume', 'low', 'high', 'mean'])
