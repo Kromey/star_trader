@@ -4,7 +4,7 @@ import random
 from economy.agent import Agent,dump_agent
 from economy import goods
 from economy.market.book import OrderBook
-from economy.market.history import MarketHistory,MarketDay
+from economy.market.history import MarketHistory
 from economy.offer import Ask,Bid
 
 
@@ -28,7 +28,7 @@ class Market(object):
             dump_agent(agent)
 
         for day in range(steps):
-            day_trades = {}
+            self._history.open_day()
             self._book.clear_books()
 
             for agent in self._agents:
@@ -37,9 +37,9 @@ class Market(object):
 
             for good in goods.all():
                 trades = self._book.resolve_orders(good)
-                day_trades[good.name] = trades
+                self._history.add_trades(good, trades)
 
-            self._history.add(MarketDay(**day_trades))
+            self._history.close_day()
 
         ## DEBUG
         for agent in self._agents:

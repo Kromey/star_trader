@@ -4,17 +4,24 @@ from collections import namedtuple
 from economy import goods
 
 
-TradesSummary = namedtuple('TradesSummary', ['volume', 'low', 'high', 'mean'])
-MarketDay = namedtuple('MarketDay', goods.all())
+Trades = namedtuple('Trades', ['volume', 'low', 'high', 'mean'])
 
 
 class MarketHistory(object):
     def __init__(self, max_depth=30):
         self._max_depth = max_depth
         self._history = []
+        self._day = []
 
-    def add(self, day):
-        self._history.append(day)
+    def open_day(self):
+        self._day = []
+
+    def add_trades(self, good, trades):
+        self._day.append((good, trades))
+
+    def close_day(self):
+        self._history.append(tuple(self._day))
+        self._day = []
 
         # Be lazy about our garbage collection
         if len(self._history) > 1.5 * self._max_depth:

@@ -1,7 +1,7 @@
 import random
 
 
-from economy.market.history import TradesSummary
+from economy.market.history import Trades
 from economy.offer import Ask,Bid
 
 
@@ -100,5 +100,5 @@ class OrderBook(object):
             unit_price = None
             print("0 units of {good} were traded today".format(good=good))
 
-        return TradesSummary(low=low, high=high, volume=units_sold, mean=unit_price)
+        return Trades(low=low, high=high, volume=units_sold, mean=unit_price)
 
