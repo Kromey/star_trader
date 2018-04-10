@@ -14,29 +14,36 @@ Trades = namedtuple('Trades', ['volume', 'low', 'high', 'mean'])
 class MarketHistory(object):
     def __init__(self, max_depth=30):
         self._max_depth = max_depth
-        self._history = []
+        self._history = {}
         self._day = None
+
+        for good in goods.all():
+            self._history[good] = []
 
     def open_day(self):
         if self._day is not None:
             logger.warning('Opening new day before previous day was properly closed. Its trades have been lost. You must call close_day() to commit trades to the history.')
 
-        self._day = []
+        self._day = {}
+        for good in goods.all():
+            self._day[good] = None
 
     def add_trades(self, good, trades):
         if self._day is None:
             logger.warning('Implicitly opening a new day to record this trade. You should call open_day() yourself.')
             self.open_day()
 
-        self._day.append((good, trades))
+        self._day[good] = trades
 
     def close_day(self):
-        self._history.append(tuple(self._day))
-        self._day = None
+        for good in self._day.keys():
+            self._history[good].append(self._day[good])
 
-        # Be lazy about our garbage collection
-        if len(self._history) > 1.5 * self._max_depth:
-            self._history = self._history[-self._max_depth:]
+            # Be lazy about our garbage collection
+            if len(self._history[good]) > 1.5 * self._max_depth:
+                self._history[good] = self._history[good][-self._max_depth:]
+
+        self._day = None
 
     @property
     def history(self, depth=None):
@@ -46,5 +53,9 @@ class MarketHistory(object):
         if depth is None:
             depth = self._max_depth
 
-        return self._history[-depth:]
+        hist = {}
+        for good in goods.all():
+            hist[good] = self._history[good][-depth:]
+
+        return hist
 
