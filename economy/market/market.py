@@ -50,3 +50,6 @@ class Market(object):
     def history(self, depth=None):
         return self._history.history(depth)
 
+    def aggregate(self, good, depth=None):
+        return self._history.aggregate(good, depth)
+

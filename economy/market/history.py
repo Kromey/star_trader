@@ -58,3 +58,30 @@ class MarketHistory(object):
 
         return hist
 
+    def aggregate(self, good, depth=None):
+        if self._day is not None:
+            logger.warning('Day has been left open. It will not appear in the history.')
+
+        if depth is None or depth > self._max_depth:
+            depth = self._max_depth
+
+        hist = self._history[good][-depth:]
+        low = None
+        high = None
+        current = None
+
+        for trades in hist:
+            try:
+                low = min(low, trades.low)
+            except TypeError:
+                low = trades.low
+
+            try:
+                high = max(high, trades.high)
+            except TypeError:
+                high = trades.high
+
+            current = trades.mean
+
+        return (low, high, current, (current-low)/(high-low))
+
