@@ -67,12 +67,14 @@ class Agent(object):
     INVENTORY_SIZE = 15
     _inventory = None
     _recipe = None
+    _market = None
     _money = 0
     _name = None
     _beliefs = None
 
-    def __init__(self, recipe, initial_inv=10, initial_money=100):
+    def __init__(self, recipe, market, initial_inv=10, initial_money=100):
         self._recipe = recipe
+        self._market = market
         self._money = initial_money
         self._name = AGENT_NAMES.pop()
 
@@ -113,15 +115,13 @@ class Agent(object):
             # we don't know how many we'll actually sell in this round
             # TODO: Need to adjust Bid qty to avoid overflowing inventory
             #       if an Agent requires multiple inputs
-            # TODO: Agents should be reluctant to buy while prices are high
-            bid_qty = space
+            bid_qty = int(space * (1-self._market.aggregate(good)[4]))
             if bid_qty > 0:
                 yield Bid(good, bid_qty, self._choose_price(good), self)
 
         for good,qty in self._recipe.outputs:
             # We produce these, sell 'em
-            # TODO: Agents should be reluctant to sell while prices are low
-            ask_qty = self._inventory.query_inventory(good)
+            ask_qty = int(self._inventory.query_inventory(good) * self._market.aggregate(good)[4])
             if ask_qty > 0:
                 yield Ask(good, ask_qty, self._choose_price(good), self)
 

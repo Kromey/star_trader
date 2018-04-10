@@ -20,7 +20,7 @@ class Market(object):
 
         for recipe in [goods.sand_digger, goods.glass_maker, goods.glass_consumer]:
             for i in range(0, num_agents, 3):
-                self._agents.append(Agent(recipe))
+                self._agents.append(Agent(recipe, self))
 
     def simulate(self, steps=1):
         ## DEBUG
