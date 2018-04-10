@@ -47,7 +47,6 @@ class Market(object):
 
         self._agents[:] = [agent for agent in self._agents if not agent.is_bankrupt]
 
-    @property
-    def history(self):
-        return self._history.history
+    def history(self, depth=None):
+        return self._history.history(depth)
 

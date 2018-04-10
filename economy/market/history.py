@@ -45,12 +45,11 @@ class MarketHistory(object):
 
         self._day = None
 
-    @property
     def history(self, depth=None):
         if self._day is not None:
             logger.warning('Day has been left open. It will not appear in the history.')
 
-        if depth is None:
+        if depth is None or depth > self._max_depth:
             depth = self._max_depth
 
         hist = {}
