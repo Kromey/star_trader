@@ -115,13 +115,21 @@ class Agent(object):
             # we don't know how many we'll actually sell in this round
             # TODO: Need to adjust Bid qty to avoid overflowing inventory
             #       if an Agent requires multiple inputs
-            bid_qty = int(space * (1-self._market.aggregate(good)[4]))
+            try:
+                ratio = 1 - self._market.aggregate(good)[3]
+            except TypeError:
+                ratio = 0.75 # Be somewhat aggressive if there's no history
+            bid_qty = int(space * 0.75)
             if bid_qty > 0:
                 yield Bid(good, bid_qty, self._choose_price(good), self)
 
         for good,qty in self._recipe.outputs:
             # We produce these, sell 'em
-            ask_qty = int(self._inventory.query_inventory(good) * self._market.aggregate(good)[4])
+            ratio = self._market.aggregate(good)[3]
+            if ratio is None:
+                ratio = 0.75 # Be somewhat aggressive if there's no history
+
+            ask_qty = int(self._inventory.query_inventory(good) * ratio)
             if ask_qty > 0:
                 yield Ask(good, ask_qty, self._choose_price(good), self)
 

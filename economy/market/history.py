@@ -71,6 +71,10 @@ class MarketHistory(object):
         current = None
 
         for trades in hist:
+            if trades.volume == 0:
+                # No trades on this day, ignore it
+                continue
+
             try:
                 low = min(low, trades.low)
             except TypeError:
@@ -83,5 +87,10 @@ class MarketHistory(object):
 
             current = trades.mean
 
-        return (low, high, current, (current-low)/(high-low))
+        try:
+            ratio = (current-low)/(high-low)
+        except TypeError:
+            ratio = None
+
+        return (low, high, current, ratio)
 
