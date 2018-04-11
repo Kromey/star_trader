@@ -1,4 +1,5 @@
 from collections import namedtuple
+from functools import lru_cache
 import logging
 
 
@@ -45,6 +46,9 @@ class MarketHistory(object):
 
         self._day = None
 
+        # Clear our cached aggregate data
+        self.aggregate.cache_clear()
+
     def history(self, depth=None):
         if self._day is not None:
             logger.warning('Day has been left open. It will not appear in the history.')
@@ -58,6 +62,7 @@ class MarketHistory(object):
 
         return hist
 
+    @lru_cache(maxsize=64)
     def aggregate(self, good, depth=None):
         if self._day is not None:
             logger.warning('Day has been left open. It will not appear in the history.')
