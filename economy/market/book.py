@@ -52,7 +52,7 @@ class OrderBook(object):
             bid = bids.pop()
 
             qty = min(ask.units, bid.units)
-            price = int((ask.unit_price + bid.unit_price)/2)
+            price = round((ask.unit_price + bid.unit_price)/2)
 
             try:
                 low = min(low, price)
@@ -79,7 +79,7 @@ class OrderBook(object):
                 ))
 
         if units_sold > 0:
-            unit_price = int(total_value/units_sold)
+            unit_price = round(total_value/units_sold)
 
             while asks:
                 # Unsuccessful Asks

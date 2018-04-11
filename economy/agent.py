@@ -82,7 +82,7 @@ class Agent(object):
 
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
-        qty = int(initial_inv / (len(self._recipe.inputs)+len(self._recipe.outputs)))
+        qty = round(initial_inv / (len(self._recipe.inputs)+len(self._recipe.outputs)))
         for good,*_ in self._recipe.inputs+self._recipe.outputs:
             self._inventory.set_qty(good, qty)
             belief_low = random.randint(5,15)
@@ -135,7 +135,7 @@ class Agent(object):
                 yield Ask(good, ask_qty, self._choose_price(good), self)
 
     def update_price_beliefs(self, good, clearing_price, successful=True):
-        mean = int(sum(self._beliefs[good])/2)
+        mean = round(sum(self._beliefs[good])/2)
         delta = mean - clearing_price # What we believe it's worth, versus what was paid
 
         wobble = 0.1
@@ -146,16 +146,16 @@ class Agent(object):
         if successful:
             # Who cares what the price was? Our offered price was good!
             # We're now more certain in our belief, so narrow our band
-            low += int(wobble*mean)
-            high -= int(wobble*mean)
+            low += round(wobble*mean)
+            high -= round(wobble*mean)
         else:
             # Either we asked too much, or bid too little
             # Shift towards what successful agents actually paid
-            low -= int(delta/2)
-            high -= int(delta/2)
+            low -= round(delta/2)
+            high -= round(delta/2)
             # We're now less certain, so expand our (shifted) band
-            low -= int(wobble*mean)
-            high += int(wobble*mean)
+            low -= round(wobble*mean)
+            high += round(wobble*mean)
 
         low = max(MIN_PRICE, low)
         high = max(MIN_PRICE, high)
@@ -204,7 +204,7 @@ class Agent(object):
         price = random.randint(*self._beliefs[good])
 
         # Cost+10% acts as a floor on our order price
-        return max(price, int(1.1 * self._get_cost(good)))
+        return max(price, round(1.1 * self._get_cost(good)))
 
     def _get_cost(self, good):
         if good not in [x.good for x in self._recipe.outputs]:
@@ -217,7 +217,7 @@ class Agent(object):
         for step in self._recipe.inputs:
             cost += step.qty * sum(self._beliefs[step.good])/2
 
-        return int(cost/max(1,outputs))
+        return round(cost/max(1,outputs))
 
 AGENT_NAMES = [
     'James',
