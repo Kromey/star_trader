@@ -115,21 +115,22 @@ class Agent(object):
             # we don't know how many we'll actually sell in this round
             # TODO: Need to adjust Bid qty to avoid overflowing inventory
             #       if an Agent requires multiple inputs
-            try:
-                ratio = 1 - self._market.aggregate(good)[3]
-            except TypeError:
-                ratio = 0.75 # Be somewhat aggressive if there's no history
-            bid_qty = int(space * 0.75)
+            bid_qty = self._determine_trade_quantity(
+                good,
+                space,
+                buying=True,
+            )
+
             if bid_qty > 0:
                 yield Bid(good, bid_qty, self._choose_price(good), self)
 
         for good,qty in self._recipe.outputs:
             # We produce these, sell 'em
-            ratio = self._market.aggregate(good)[3]
-            if ratio is None:
-                ratio = 0.75 # Be somewhat aggressive if there's no history
+            ask_qty = self._determine_trade_quantity(
+                good,
+                self._inventory.query_inventory(good),
+            )
 
-            ask_qty = int(self._inventory.query_inventory(good) * ratio)
             if ask_qty > 0:
                 yield Ask(good, ask_qty, self._choose_price(good), self)
 
@@ -166,6 +167,22 @@ class Agent(object):
     def give_items(self, item, amt, other):
         self._inventory.remove_item(item, amt)
         other._inventory.add_item(item, amt)
+
+    def _determine_trade_quantity(self, good, base_qty, buying=False, default=0.75):
+        if base_qty <= 0:
+            return 0
+
+        ratio = self._market.aggregate(good)[3]
+
+        if ratio is None:
+            ratio = 0.75
+        elif buying:
+            ratio = 1 - ratio
+
+        qty = round(base_qty * ratio)
+
+        # Trade at least 1
+        return max(1, qty)
 
     def _can_produce(self):
         for good,qty in self._recipe.inputs:
