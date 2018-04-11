@@ -2,7 +2,7 @@ from collections import namedtuple
 import random
 
 
-from .offer import Ask,Bid
+from .offer import Ask,Bid,MIN_PRICE
 
 
 def dump_agent(agent):
@@ -156,6 +156,9 @@ class Agent(object):
             # We're now less certain, so expand our (shifted) band
             low -= int(wobble*mean)
             high += int(wobble*mean)
+
+        low = max(MIN_PRICE, low)
+        high = max(MIN_PRICE, high)
 
         self._beliefs[good] = [low, high]
         self._beliefs[good].sort()
