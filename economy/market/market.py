@@ -47,6 +47,53 @@ class Market(object):
         for agent in self._agents:
             dump_agent(agent)
 
+    def make_charts(self):
+        # TODO: Decide if these will be general dependencies, or if charts will
+        #       be an optional feature and thus these optional dependencies.
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        hist = self.history()
+
+        for good in goods.all():
+            prices = []
+            errs = [[],[]]
+            volumes = []
+
+            days = list(range(1,len(hist[good])+1))
+
+            for trades in hist[good]:
+                if trades.mean is not None:
+                    prices.append(trades.mean)
+
+                    errs[0].append(trades.mean - trades.low)
+                    errs[1].append(trades.high - trades.mean)
+                else:
+                    prices.append(np.nan)
+
+                    errs[0].append(np.nan)
+                    errs[1].append(np.nan)
+
+                volumes.append(trades.volume or 0)
+
+            plt.figure()
+
+            plt.suptitle('{}-Day History for {}'.format(days[-1], good))
+
+            ax1 = plt.subplot(211)
+            ax1.set_ylabel('Price')
+            ax1.set_xlabel('Day')
+            ax1.errorbar(days, prices, yerr=errs)
+
+            ax2 = plt.subplot(212, sharex=ax1)
+            ax2.set_ylabel('Volume')
+            ax2.bar(days, volumes)
+
+            plt.subplots_adjust(wspace=0, hspace=0)
+
+            plt.savefig('{}.png'.format(good), bbox_inches='tight')
+            plt.close()
+
     def history(self, depth=None):
         return self._history.history(depth)
 
