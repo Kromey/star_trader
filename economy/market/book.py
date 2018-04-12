@@ -73,10 +73,20 @@ class OrderBook(object):
             bid.agent.update_price_beliefs(good, price)
             ask.agent.update_price_beliefs(good, price)
 
-            print("Bid: {} units of {} for {}; Ask: {} units of {} for {}".format(
+            print("Bid: {} units of {} for {}; Ask: {} units of {} for {}; Cleared {} units for {}".format(
                 bid.units, bid.good, bid.unit_price,
                 ask.units, ask.good, ask.unit_price,
+                qty, price,
                 ))
+
+            ask.units -= qty
+            bid.units -= qty
+
+            if ask.units > 0:
+                asks.append(ask)
+
+            if bid.units > 0:
+                bids.append(bid)
 
         if units_sold > 0:
             unit_price = round(total_value/units_sold)
