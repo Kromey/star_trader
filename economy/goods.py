@@ -1,29 +1,31 @@
 from collections import namedtuple
+import yaml
 
 
 _by_name = {}
 def by_name(name):
     return _by_name[name.lower()]
 
+_goods = []
 def all():
-    for good in _by_name.values():
+    for good in _goods:
         yield good
 
 
-class Good(namedtuple('Good', ['name',])):
+class Good(namedtuple('Good', ['name','size'])):
     __slots__ = ()
     def __init__(self, *args, **kwargs):
         _by_name[self.name.lower()] = self
+        _goods.append(self)
 
     def __str__(self):
         return self.name
 
 
-Sand = Good('Sand')
-Glass = Good('Glass')
-
-#Ore = Good('Ore')
-#Metal = Good('Metal')
+with open('data/goods.yml') as fh:
+    _data = yaml.load(fh)
+    for good in _data['Goods']:
+        Good(**good)
 
 
 RecipeStep = namedtuple('RecipeStep', ['good','qty'])
@@ -54,7 +56,7 @@ class Recipe(object):
     def __str__(self):
         return self.__name
 
-sand_digger = Recipe('SandDigger', (), ((Sand, 1),))
-glass_maker = Recipe('GlassMaker', ((Sand, 2),), ((Glass, 1),))
-glass_consumer = Recipe('GlassEater', ((Glass, 1),), ())
+sand_digger = Recipe('SandDigger', (), ((by_name('Sand'), 1),))
+glass_maker = Recipe('GlassMaker', ((by_name('Sand'), 2),), ((by_name('Glass'), 1),))
+glass_consumer = Recipe('GlassEater', ((by_name('Glass'), 1),), ())
 
