@@ -2,7 +2,7 @@ import random
 
 
 from economy.agent import Agent,dump_agent
-from economy import goods
+from economy import goods,jobs
 from economy.market.book import OrderBook
 from economy.market.history import MarketHistory
 from economy.offer import Ask,Bid
@@ -18,7 +18,7 @@ class Market(object):
         self._book = OrderBook()
         self._history = MarketHistory()
 
-        for recipe in [goods.sand_digger, goods.glass_maker, goods.glass_maker, goods.glass_consumer]:
+        for recipe in jobs.all():
             for i in range(0, num_agents, 3):
                 self._agents.append(Agent(recipe, self))
 
@@ -58,14 +58,7 @@ class Market(object):
 
                 profits.sort(key=lambda x: x[0], reverse=True)
 
-                ## TODO: This is a TEMPORARY HACK
-                ##       We need a proper way to look up recipes
-                if profits[0][1] == 'SandDigger':
-                    agents.append(Agent(goods.sand_digger, self))
-                elif profits[0][1] == 'GlassMaker':
-                    agents.append(Agent(goods.glass_maker, self))
-                else:
-                    agents.append(Agent(goods.glass_consumer, self))
+                agents.append(Agent(jobs.by_name(profits[0][1]), self))
 
             self._agents = agents
 

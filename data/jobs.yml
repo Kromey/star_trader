@@ -1,0 +1,20 @@
+---
+Jobs:
+  - name: 'Sand Digger'
+    outputs:
+      - good: 'Sand'
+        qty: 1
+
+  - name: 'Glass Maker'
+    inputs:
+      - good: 'Sand'
+        qty: 2
+    outputs:
+      - good: 'Glass'
+        qty: 1
+
+  - name: 'Glass Eater'
+    inputs:
+      - good: 'Glass'
+        qty: 1
+
