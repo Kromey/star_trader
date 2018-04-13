@@ -18,7 +18,7 @@ class Market(object):
         self._book = OrderBook()
         self._history = MarketHistory()
 
-        for recipe in [goods.sand_digger, goods.glass_maker, goods.glass_consumer]:
+        for recipe in [goods.sand_digger, goods.glass_maker, goods.glass_maker, goods.glass_consumer]:
             for i in range(0, num_agents, 3):
                 self._agents.append(Agent(recipe, self))
 
