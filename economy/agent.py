@@ -69,6 +69,7 @@ class Agent(object):
     _recipe = None
     _market = None
     _money = 0
+    _initial_money = 0
     _name = None
     _beliefs = None
 
@@ -76,6 +77,7 @@ class Agent(object):
         self._recipe = recipe
         self._market = market
         self._money = initial_money
+        self._initial_money = initial_money
         self._name = AGENT_NAMES.pop()
 
         self._beliefs = {}
@@ -88,6 +90,10 @@ class Agent(object):
             belief_low = random.randint(5,15)
             belief_high = belief_low + random.randint(5,10)
             self._beliefs[good] = [belief_low, belief_high]
+
+    @property
+    def profit(self):
+        return self._money - self._initial_money
 
     @property
     def is_bankrupt(self):
