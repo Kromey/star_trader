@@ -41,7 +41,33 @@ class Market(object):
 
             self._history.close_day()
 
-            self._agents[:] = [agent for agent in self._agents if not agent.is_bankrupt]
+            agents = [agent for agent in self._agents if not agent.is_bankrupt]
+
+            while len(agents) < len(self._agents):
+                jobs = {}
+                for agent in agents:
+                    job_profit = jobs.get(agent.job, [0, 0])
+                    job_profit[0] += agent.profit
+                    job_profit[1] += 1
+
+                    jobs[agent.job] = job_profit
+
+                profits = []
+                for job in jobs:
+                    profits.append((jobs[job][0]/jobs[job][1], job))
+
+                profits.sort(key=lambda x: x[0], reverse=True)
+
+                ## TODO: This is a TEMPORARY HACK
+                ##       We need a proper way to look up recipes
+                if profits[0][1] == 'SandDigger':
+                    agents.append(Agent(goods.sand_digger, self))
+                elif profits[0][1] == 'GlassMaker':
+                    agents.append(Agent(goods.glass_maker, self))
+                else:
+                    agents.append(Agent(goods.glass_consumer, self))
+
+            self._agents = agents
 
         ## DEBUG
         for agent in self._agents:

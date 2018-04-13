@@ -69,7 +69,7 @@ class Agent(object):
     _recipe = None
     _market = None
     _money = 0
-    _initial_money = 0
+    _money_last_round = 0
     _name = None
     _beliefs = None
 
@@ -77,7 +77,7 @@ class Agent(object):
         self._recipe = recipe
         self._market = market
         self._money = initial_money
-        self._initial_money = initial_money
+        self._money_last_round = initial_money
         self._name = AGENT_NAMES.pop()
 
         self._beliefs = {}
@@ -92,8 +92,12 @@ class Agent(object):
             self._beliefs[good] = [belief_low, belief_high]
 
     @property
+    def job(self):
+        return str(self._recipe)
+
+    @property
     def profit(self):
-        return self._money - self._initial_money
+        return self._money - self._money_last_round
 
     @property
     def is_bankrupt(self):
@@ -114,6 +118,9 @@ class Agent(object):
                 self._inventory.add_item(good, qty)
 
     def make_offers(self):
+        # From an Agent's perspective, making offers is the start of a round
+        self._money_last_round = self._money
+
         space = self._inventory.available_space()
         for good,qty in self._recipe.inputs:
             # Input into our recipe, make a bid to buy
