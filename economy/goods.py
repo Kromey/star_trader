@@ -23,7 +23,6 @@ class Good(namedtuple('Good', ['name','size'])):
 
 
 with open('data/goods.yml') as fh:
-    _data = yaml.load(fh)
-    for good in _data['Goods']:
+    for good in yaml.load(fh):
         Good(**good)
 

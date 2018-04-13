@@ -1,8 +1,7 @@
 ---
-Goods:
-  - name: 'Sand'
-    size: 1.0
+- name: 'Sand'
+  size: 1.0
 
-  - name: 'Glass'
-    size: 1.0
+- name: 'Glass'
+  size: 1.0
 

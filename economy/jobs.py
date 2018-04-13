@@ -50,7 +50,6 @@ class Job(object):
 
 
 with open('data/jobs.yml') as fh:
-    _data = yaml.load(fh)
-    for job in _data['Jobs']:
+    for job in yaml.load(fh):
         Job(**job)
 
