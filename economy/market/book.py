@@ -39,6 +39,9 @@ class OrderBook(object):
         low = None
         high = None
 
+        supply = sum([ask.units for ask in asks])
+        demand = sum([bid.units for bid in bids])
+
         # First shuffle the orders to ensure Agent ordering not a factor
         random.shuffle(asks)
         random.shuffle(bids)
@@ -110,5 +113,5 @@ class OrderBook(object):
             unit_price = None
             print("0 units of {good} were traded today".format(good=good))
 
-        return Trades(low=low, high=high, volume=units_sold, mean=unit_price)
+        return Trades(low=low, high=high, volume=units_sold, mean=unit_price, supply=supply, demand=demand)
 

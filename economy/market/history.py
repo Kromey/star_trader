@@ -9,7 +9,7 @@ from economy import goods
 logger = logging.getLogger(__name__)
 
 
-Trades = namedtuple('Trades', ['volume', 'low', 'high', 'mean'])
+Trades = namedtuple('Trades', ['volume', 'low', 'high', 'mean', 'supply', 'demand'])
 
 
 class MarketHistory(object):
