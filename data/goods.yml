@@ -1,4 +1,9 @@
 ---
+# This file defines the Goods available for trade and production
+# This file should be a list of items that each follow this format:
+#   - name: 'Name' # String name of this Good
+#     size: 1.0    # Size this Good occupies (float)
+
 - name: 'Sand'
   size: 1.0
 
