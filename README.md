@@ -1,4 +1,4 @@
-# star_trader
+# Rogue Trader
 What if your economics textbook was a roguelike game?
 
-This branch is the devlog and website for Star Trader a.k.a. Rogue Trader.
+This branch is the devlog and website for Rogue Trader.
