@@ -10,7 +10,7 @@ title: Rogue Trader
     <span class="date">{{ post.date | date: "%-d %B %Y" }}</span>
   </p>
   <div class="content">
-    {{ post.excerpt }}
+    {{ post.excerpt }} <em><a href="{{ post.url }}">Continue reading</a></em>
   </div>
 {% endfor %}
 
