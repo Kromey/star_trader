@@ -2,6 +2,7 @@
 # This file defines the Jobs available for Agents
 # This file should be a list of items in the following format:
 #   - name: 'Job Name' # String name of the Job
+#     limit: 2         # (Optional) Maximum number of Job runs in a round
 #     inputs:          # (Optional) List of Goods required to perform this Job
 #       - good: 'Good' # String name of the Good
 #         qty: 1       # Integer number of units required
@@ -30,6 +31,7 @@
       qty: 1
 
 - name: 'Glass Eater'
+  limit: 2
   inputs:
     - good: 'Glass'
       qty: 1

@@ -109,7 +109,10 @@ class Agent(object):
         return self._money <= 0
 
     def do_production(self):
-        while self._can_produce():
+        for run in self._recipe.runs:
+            if not self._can_produce():
+                return
+
             for good,qty in self._recipe.inputs:
                 # Deduct any required input
                 self._inventory.remove_item(good, qty)

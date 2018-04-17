@@ -19,10 +19,11 @@ JobStep = namedtuple('JobStep', ['good','qty'])
 
 
 class Job(object):
-    __slots__ = ('__inputs','__outputs','__name')
+    __slots__ = ('__inputs','__outputs','__name','__limit')
 
-    def __init__(self, name, inputs=[], outputs=[]):
+    def __init__(self, name, inputs=[], outputs=[], limit=None):
         self.__name = name
+        self.__limit = limit
 
         self.__inputs = ()
         for step in inputs:
@@ -44,6 +45,19 @@ class Job(object):
     @property
     def outputs(self):
         return self.__outputs
+
+    @property
+    def limit(self):
+        return self.__limit
+
+    @property
+    def runs(self):
+        if self.limit is None:
+            while True:
+                yield True
+        else:
+            for x in range(self.limit):
+                yield True
 
     def __str__(self):
         return self.__name
