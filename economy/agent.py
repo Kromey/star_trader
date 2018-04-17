@@ -205,14 +205,20 @@ class Agent(object):
         return max(1, qty)
 
     def _can_produce(self):
+        space = self._inventory.available_space()
+
         for good,qty in self._recipe.inputs:
             # Ensure there's enough input
             if qty > self._inventory.query_inventory(good):
                 return False
 
+            # This will be consumed in production, freeing up space
+            space += qty
+
         for good,qty in self._recipe.outputs:
             # Ensure there's room for the output
-            if qty + self._inventory.query_inventory(good) > Agent.INVENTORY_SIZE:
+            space -= qty
+            if space < 0:
                 return False
 
         return True
