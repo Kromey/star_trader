@@ -44,17 +44,17 @@ class Market(object):
             agents = [agent for agent in self._agents if not agent.is_bankrupt]
 
             while len(agents) < len(self._agents):
-                jobs = {}
+                profit_by_job = {}
                 for agent in agents:
-                    job_profit = jobs.get(agent.job, [0, 0])
+                    job_profit = profit_by_job.get(agent.job, [0, 0])
                     job_profit[0] += agent.profit
                     job_profit[1] += 1
 
-                    jobs[agent.job] = job_profit
+                    profit_by_job[agent.job] = job_profit
 
                 profits = []
-                for job in jobs:
-                    profits.append((jobs[job][0]/jobs[job][1], job))
+                for job in profit_by_job:
+                    profits.append((profit_by_job[job][0]/profit_by_job[job][1], job))
 
                 profits.sort(key=lambda x: x[0], reverse=True)
 
