@@ -10,3 +10,6 @@
 - name: 'Glass'
   size: 1.0
 
+- name: 'Blower'
+  size: 2.0
+

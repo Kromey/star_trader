@@ -92,6 +92,13 @@ class Agent(object):
             belief_high = belief_low + random.randint(5,10)
             self._beliefs[good] = [belief_low, belief_high]
 
+        for tool,qty,break_chance in self._recipe.tools:
+            # Start with all necessary tools
+            self._inventory.set_qty(tool,qty)
+            belief_low = random.randint(5,15)
+            belief_high = belief_low + random.randint(5,10)
+            self._beliefs[tool] = [belief_low, belief_high]
+
     @property
     def job(self):
         return str(self._recipe)
@@ -120,6 +127,11 @@ class Agent(object):
             for good,qty in self._recipe.outputs:
                 # Add any output
                 self._inventory.add_item(good, qty)
+
+            for tool,qty,break_chance in self._recipe.tools:
+                # Check for tool breakage
+                if random.random() < break_chance:
+                    self._inventory.remove_item(tool, 1)
 
     def make_offers(self):
         # From an Agent's perspective, making offers is the start of a round
@@ -150,6 +162,12 @@ class Agent(object):
 
             if ask_qty > 0:
                 yield Ask(good, ask_qty, self._choose_price(good), self)
+
+        for tool,qty,break_chance in self._recipe.tools:
+            # Check if we need to buy any tools
+            have = self._inventory.query_inventory(tool)
+            if have < qty:
+                yield Bid(tool, qty-have, self._choose_price(tool), self)
 
     def update_price_beliefs(self, good, clearing_price, successful=True):
         mean = round(sum(self._beliefs[good])/2)
@@ -219,6 +237,11 @@ class Agent(object):
             # Ensure there's room for the output
             space -= qty
             if space < 0:
+                return False
+
+        for tool,qty,break_chance in self._recipe.tools:
+            # Ensure we have our tools
+            if qty > self._inventory.query_inventory(tool):
                 return False
 
         return True

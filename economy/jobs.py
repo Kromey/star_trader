@@ -16,12 +16,13 @@ def all():
 
 
 JobStep = namedtuple('JobStep', ['good','qty'])
+JobTool = namedtuple('JobTool', ['tool','qty','break_chance'])
 
 
 class Job(object):
-    __slots__ = ('__inputs','__outputs','__name','__limit')
+    __slots__ = ('__inputs','__outputs','__tools','__name','__limit')
 
-    def __init__(self, name, inputs=[], outputs=[], limit=None):
+    def __init__(self, name, inputs=[], outputs=[], tools=[], limit=None):
         self.__name = name
         self.__limit = limit
 
@@ -35,6 +36,11 @@ class Job(object):
             step['good'] = goods.by_name(step['good'])
             self.__outputs += (JobStep(**step),)
 
+        self.__tools = ()
+        for tool in tools:
+            tool['tool'] = goods.by_name(tool['tool'])
+            self.__tools += (JobTool(**tool),)
+
         _by_name[name.lower()] = self
         _jobs.append(self)
 
@@ -45,6 +51,10 @@ class Job(object):
     @property
     def outputs(self):
         return self.__outputs
+
+    @property
+    def tools(self):
+        return self.__tools
 
     @property
     def limit(self):
