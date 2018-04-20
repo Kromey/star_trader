@@ -164,37 +164,6 @@ class Agent(object):
             if have < qty:
                 yield Bid(tool, qty-have, self.beliefs.choose_price(tool), self)
 
-    def update_price_beliefs(self, good, clearing_price, successful=True):
-        mean = round(sum(self._beliefs[good])/2)
-        # What we believe it's worth, versus what was paid
-        delta = mean - clearing_price
-
-        # This will be how much we expand/constrict our belief range
-        wobble = round(0.1 * mean)
-
-        # Our current price beliefs
-        low, high = self._beliefs[good]
-
-        if successful:
-            # Who cares what the price was? Our offered price was good!
-            # We're now more certain in our belief, so narrow our band
-            low += wobble
-            high -= wobble
-        else:
-            # Either we asked too much, or bid too little
-            # Shift towards what successful agents actually paid
-            low -= round(delta/2)
-            high -= round(delta/2)
-            # We're now less certain, so expand our (shifted) band
-            low -= wobble
-            high += wobble
-
-        low = max(MIN_PRICE, low)
-        high = max(MIN_PRICE, high)
-
-        self._beliefs[good] = [low, high]
-        self._beliefs[good].sort()
-
     def give_money(self, amt, other):
         self._money -= amt
         other._money += amt

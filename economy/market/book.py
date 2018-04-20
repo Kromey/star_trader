@@ -73,8 +73,8 @@ class OrderBook(object):
             bid.agent.give_money(qty * price, ask.agent)
             ask.agent.give_items(good, qty, bid.agent)
 
-            bid.agent.update_price_beliefs(good, price)
-            ask.agent.update_price_beliefs(good, price)
+            bid.agent.beliefs.update(good, price)
+            ask.agent.beliefs.update(good, price)
 
             print("Bid: {} units of {} for {}; Ask: {} units of {} for {}; Cleared {} units for {}".format(
                 bid.units, bid.good, bid.unit_price,
@@ -97,12 +97,12 @@ class OrderBook(object):
             while asks:
                 # Unsuccessful Asks
                 ask = asks.pop()
-                ask.agent.update_price_beliefs(good, unit_price, False)
+                ask.agent.beliefs.update(good, unit_price, False)
 
             while bids:
                 # Unsuccessful Bids
                 bid = bids.pop()
-                bid.agent.update_price_beliefs(good, unit_price, False)
+                bid.agent.beliefs.update(good, unit_price, False)
 
             print("Sold {units} {good} at an average price of {price}".format(
                 units=units_sold,

@@ -36,9 +36,16 @@ class Beliefs(object):
             # Also, our confidence is shaken by our failure
             confidence /= 0.9
 
-        # TODO: Ensure our beliefs won't result in negative prices... somehow
+        # Ensure our beliefs won't result in too-low prices
+        if belief - confidence < MIN_PRICE:
+            # First find the top end of our range
+            top = belief + confidence
+            # Now move our belief to the middle of the range [MIN_PRICE,top]
+            belief = (top + MIN_PRICE)/2
+            # And now fix our confidence so the top of our range doesn't move
+            confidence = top - belief
 
-        self._beliefs[good] = [belief, confidence]
+        self._beliefs[good] = [round(belief), round(confidence)]
 
     def interval_factor(self):
         return random.random() * 2 - 1
