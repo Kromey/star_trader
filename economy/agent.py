@@ -2,6 +2,7 @@ from collections import namedtuple
 import random
 
 
+from .beliefs import Beliefs
 from .offer import Ask,Bid,MIN_PRICE
 
 
@@ -72,7 +73,7 @@ class Agent(object):
     _money = 0
     _money_last_round = 0
     _name = None
-    _beliefs = None
+    beliefs = None
 
     def __init__(self, recipe, market, initial_inv=10, initial_money=100):
         self._recipe = recipe
@@ -81,23 +82,17 @@ class Agent(object):
         self._money_last_round = initial_money
         self._name = AGENT_NAMES.pop()
 
-        self._beliefs = {}
+        self.beliefs = Beliefs()
 
         # Initialize inventory
         self._inventory = Inventory(self.INVENTORY_SIZE)
         qty = round(initial_inv / (len(self._recipe.inputs)+len(self._recipe.outputs)))
         for good,*_ in self._recipe.inputs+self._recipe.outputs:
             self._inventory.set_qty(good, qty)
-            belief_low = random.randint(5,15)
-            belief_high = belief_low + random.randint(5,10)
-            self._beliefs[good] = [belief_low, belief_high]
 
         for tool,qty,break_chance in self._recipe.tools:
             # Start with all necessary tools
             self._inventory.set_qty(tool,qty)
-            belief_low = random.randint(5,15)
-            belief_high = belief_low + random.randint(5,10)
-            self._beliefs[tool] = [belief_low, belief_high]
 
     @property
     def job(self):
@@ -151,7 +146,7 @@ class Agent(object):
             )
 
             if bid_qty > 0:
-                yield Bid(good, bid_qty, self._choose_price(good), self)
+                yield Bid(good, bid_qty, self.beliefs.choose_price(good), self)
 
         for good,qty in self._recipe.outputs:
             # We produce these, sell 'em
@@ -161,13 +156,13 @@ class Agent(object):
             )
 
             if ask_qty > 0:
-                yield Ask(good, ask_qty, self._choose_price(good), self)
+                yield Ask(good, ask_qty, self.beliefs.choose_price(good), self)
 
         for tool,qty,break_chance in self._recipe.tools:
             # Check if we need to buy any tools
             have = self._inventory.query_inventory(tool)
             if have < qty:
-                yield Bid(tool, qty-have, self._choose_price(tool), self)
+                yield Bid(tool, qty-have, self.beliefs.choose_price(tool), self)
 
     def update_price_beliefs(self, good, clearing_price, successful=True):
         mean = round(sum(self._beliefs[good])/2)
@@ -248,12 +243,6 @@ class Agent(object):
 
         return True
 
-    def _choose_price(self, good):
-        price = random.randint(*self._beliefs[good])
-
-        # Cost+10% acts as a floor on our order price
-        return max(price, round(1.1 * self._get_cost(good)))
-
     def _get_cost(self, good):
         if good not in [x.good for x in self._recipe.outputs]:
             # This is not an output, so our cost is 0
@@ -263,7 +252,7 @@ class Agent(object):
         outputs = sum([x.qty for x in self._recipe.outputs])
 
         for step in self._recipe.inputs:
-            cost += step.qty * sum(self._beliefs[step.good])/2
+            cost += step.qty * self.beliefs.get_belief(step.good)[0]
 
         return round(cost/max(1,outputs))
 
