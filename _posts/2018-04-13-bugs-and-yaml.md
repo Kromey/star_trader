@@ -1,7 +1,7 @@
 ---
 title: Bugs and YAML
 layout: post
-category: devlog
+category: Devlog
 ---
 The coding for **Rogue Trader's** economy simulation is very nearly complete. Agents have already been buying from and selling to one another, their interactions in aggregate creating a market with discernable properties, the most obvious (and, arguably, most important) being "market price", which is going to be what players interact with most.
 
