@@ -96,6 +96,9 @@ class MarketHistory(object):
             ratio = (current-low)/(high-low)
         except TypeError:
             ratio = None
+        except ZeroDivisionError:
+            # Special case to handle high and low being the same
+            ratio = 0.5
 
         return (low, high, current, ratio)
 
