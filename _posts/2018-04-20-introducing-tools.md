@@ -1,5 +1,5 @@
 ---
-title: Introducing: Tools
+title: "Introducing: Tools"
 layout: post
 category: Devlog
 tags: economy simulation bugfix
